@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,6 +17,12 @@ namespace RoommateFinderAPI.Controllers
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
         private readonly IConfiguration configuration;
+        private Dictionary<string, IList<string>> GetRoles = new Dictionary<string, IList<string>>()
+        {
+            [Policies.Moderator] = new List<string>() { Policies.Moderator, Policies.Owner, Policies.Roommate },
+            [Policies.Owner] = new List<string>() { Policies.Owner },
+            [Policies.Roommate] = new List<string>() { Policies.Roommate },
+        };
 
         public AccountController(UserManager<User> userManager, SignInManager<User> signInManager,
             IConfiguration configuration)
@@ -68,5 +75,49 @@ namespace RoommateFinderAPI.Controllers
             };
             return tokenHandler.WriteToken(tokenHandler.CreateToken(token));
         }
+
+        [Authorize(Policy = Policies.Admin)]
+        [HttpPost("create/user/moderator")]
+        public IActionResult RegisterModerator([FromBody] SaveUserResource userAccount)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            return SaveUserAndAddRoles(userAccount, Policies.Moderator);
+        }
+        [AllowAnonymous]
+        [HttpPost("create/user/{inputRole}")]
+        public IActionResult RegisterUser([FromBody] SaveUserResource userAccount, string inputRole)
+        {
+            if (!ModelState.IsValid || (inputRole != Policies.Owner && inputRole != Policies.Roommate))
+                return BadRequest();
+
+            return SaveUserAndAddRoles(userAccount, inputRole);
+        }
+        private IActionResult SaveUserAndAddRoles(SaveUserResource userAccount, string inputRole)
+        {
+            var user = new User()
+            {
+                Email = userAccount.Email,
+                UserName = userAccount.UserName
+            };
+            userManager.CreateAsync(user, userAccount.Password).Wait();
+            var registeredUser = userManager.FindByNameAsync(user.UserName).Result;
+
+            if (registeredUser != null)
+            {
+                foreach (var role in GetRoles[inputRole])
+                    userManager.AddToRoleAsync(registeredUser, role).Wait();
+
+                return Ok(new
+                {
+                    registeredUser.Id,
+                    registeredUser.Email,
+                    registeredUser.UserName,
+                    Roles = userManager.GetRolesAsync(registeredUser).Result,
+                });
+            }
+            return NotFound();
+        }
+
     }
 }
