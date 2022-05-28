@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using RoommateFinderAPI.Core;
 using RoommateFinderAPI.Entities.Models;
 using RoommateFinderAPI.Entities.Resources;
 using RoommateFinderAPI.Persistence;
@@ -44,6 +45,10 @@ builder.Services.AddDbContext<RoommateFinderDbContext>(
 builder.Services.AddIdentity<User, IdentityRole>()
    .AddEntityFrameworkStores<RoommateFinderDbContext>();
 // Add services to the container.
+
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddControllersWithViews();
 
 
