@@ -1,16 +1,15 @@
-using System.Configuration;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using RoommateFinderAPI.Core;
 using RoommateFinderAPI.Entities.Models;
 using RoommateFinderAPI.Entities.Resources;
 using RoommateFinderAPI.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 builder.Services.AddAuthorization(config =>
 {
@@ -38,9 +37,8 @@ builder.Services.AddAuthentication(options =>
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
-builder.Services.AddDbContext<RoommateFinderDbContext>(
-    options => options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    new MySqlServerVersion(new Version(8, 0, 29))));
+builder.Services.AddDbContext<RoommateFinderDbContext>(options =>
+            options.UseSqlite("Filename=../RommateFinder.db"));
 
 builder.Services.AddIdentity<User, IdentityRole>()
    .AddEntityFrameworkStores<RoommateFinderDbContext>();
@@ -50,8 +48,6 @@ builder.Services.AddIdentity<User, IdentityRole>()
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddControllersWithViews();
-
-
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
