@@ -7,6 +7,7 @@ using RoommateFinderAPI.Core;
 using RoommateFinderAPI.Entities.Models;
 using RoommateFinderAPI.Entities.Resources;
 using RoommateFinderAPI.Persistence;
+using RoommateFinderAPI.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,9 +44,11 @@ builder.Services.AddDbContext<RoommateFinderDbContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>()
    .AddEntityFrameworkStores<RoommateFinderDbContext>();
 // Add services to the container.
+builder.Services.AddAutoMapper(typeof(Program));
 
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ITagRepository, TagsRepository>();
 
 builder.Services.AddControllersWithViews();
 
@@ -62,6 +65,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseHttpLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();
