@@ -11,7 +11,7 @@ using RoommateFinderAPI.Persistence;
 namespace RoommateFinderAPI.Migrations
 {
     [DbContext(typeof(RoommateFinderDbContext))]
-    [Migration("20220920140001_InitialModel")]
+    [Migration("20220921161207_InitialModel")]
     partial class InitialModel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -149,16 +149,21 @@ namespace RoommateFinderAPI.Migrations
 
             modelBuilder.Entity("RoommateFinderAPI.Entities.Models.Room", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("REAL");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("NumberofBathRoomsintheApartment")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("NumberofPeopleinTheRoom")
                         .HasColumnType("INTEGER");
@@ -170,7 +175,6 @@ namespace RoommateFinderAPI.Migrations
                         .HasColumnType("REAL");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<double>("longitude")
@@ -185,11 +189,11 @@ namespace RoommateFinderAPI.Migrations
 
             modelBuilder.Entity("RoommateFinderAPI.Entities.Models.RoomTag", b =>
                 {
-                    b.Property<int>("RoomId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("TagId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("RoomId", "TagId");
 
@@ -200,16 +204,11 @@ namespace RoommateFinderAPI.Migrations
 
             modelBuilder.Entity("RoommateFinderAPI.Entities.Models.Tag", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Notes")
-                        .IsRequired()
+                    b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -336,9 +335,7 @@ namespace RoommateFinderAPI.Migrations
                 {
                     b.HasOne("RoommateFinderAPI.Entities.Models.User", "PublishedBy")
                         .WithMany("Rooms")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("PublishedBy");
                 });
