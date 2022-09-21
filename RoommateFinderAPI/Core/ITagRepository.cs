@@ -5,8 +5,8 @@ namespace RoommateFinderAPI.Core
     public interface ITagRepository
     {
         Task<IEnumerable<Tag>> GetTags();
-        Task<Tag> GetTag(int id);
-        void Add(Tag client);
-        void Remove(Tag client);
+        Task<Tag> GetTag(Guid id);
+        void Add(Tag tag);
+        void Remove(Tag tag);
     }
 }

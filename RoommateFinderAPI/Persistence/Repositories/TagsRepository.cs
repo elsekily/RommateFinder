@@ -12,12 +12,12 @@ namespace RoommateFinderAPI.Persistence.Repositories
         {
             this.context = context;
         }
-        public void Add(Tag client)
+        public async void Add(Tag tag)
         {
-            throw new NotImplementedException();
+            await context.Tags.AddAsync(tag);
         }
 
-        public async Task<Tag> GetTag(int id)
+        public async Task<Tag> GetTag(Guid id)
         {
             return await context.Tags.Where(t => t.Id == id).FirstOrDefaultAsync();
         }
@@ -27,9 +27,9 @@ namespace RoommateFinderAPI.Persistence.Repositories
             var x = context.Tags;
             return await context.Tags.ToListAsync();
         }
-        public void Remove(Tag client)
+        public void Remove(Tag tag)
         {
-            context.Remove(client);
+            context.Tags.Remove(tag);
         }
     }
 }

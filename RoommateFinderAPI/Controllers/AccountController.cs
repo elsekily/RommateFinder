@@ -118,6 +118,5 @@ namespace RoommateFinderAPI.Controllers
             }
             return NotFound();
         }
-
     }
 }
