@@ -1,7 +1,9 @@
 using System.Security.AccessControl;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RoommateFinderAPI.Core;
+using RoommateFinderAPI.Entities.Models;
 using RoommateFinderAPI.Entities.Resources;
 
 namespace RoommateFinderAPI.Controllers
@@ -11,44 +13,79 @@ namespace RoommateFinderAPI.Controllers
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly ITagRepository repository;
+        private readonly IMapper mapper;
 
-        public TagController(IUnitOfWork unitOfWork,
-            ITagRepository repository)
+        public TagController(IUnitOfWork unitOfWork, ITagRepository repository, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             this.repository = repository;
+            this.mapper = mapper;
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTag(int id)
+        public async Task<IActionResult> GetTag(Guid id)
         {
             var tag = await repository.GetTag(id);
             if (tag == null)
                 return NotFound();
-            return Ok(tag);
+
+            var result = mapper.Map<Tag, TagResource>(tag);
+            return Ok(result);
         }
         [HttpGet]
         public async Task<IActionResult> GetTags()
         {
             var tags = await repository.GetTags();
-            return Ok(tags);
+            var result = mapper.Map<IEnumerable<Tag>, IEnumerable<TagResource>>(tags);
+            return Ok(result);
         }
         [Authorize(Policy = Policies.Moderator)]
         [HttpPost]
-        public async Task<IActionResult> CreateClient([FromBody] ClientSaveResource clientResource)
+        public async Task<IActionResult> CreateTag([FromBody] TagSaveResource tagResource)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var client = mapper.Map<ClientSaveResource, Client>(clientResource);
-            repository.Add(client);
+            var tag = mapper.Map<TagSaveResource, Tag>(tagResource);
+            repository.Add(tag);
 
             await unitOfWork.CompleteAsync();
 
-            client = await repository.GetClient(client.Id);
-            var result = mapper.Map<Client, ClientResource>(client);
-            return Created(nameof(GetClient), result);
+            tag = await repository.GetTag(tag.Id);
+            var result = mapper.Map<Tag, TagResource>(tag);
+            return Created(nameof(GetTag), result);
         }
+        [Authorize(Policy = Policies.Moderator)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTag(Guid id, [FromBody] TagSaveResource tagResource)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
 
+            var tag = await repository.GetTag(id);
+            if (tag == null)
+                return NotFound();
 
+            mapper.Map<TagSaveResource, Tag>(tagResource, tag);
+
+            await unitOfWork.CompleteAsync();
+
+            tag = await repository.GetTag(tag.Id);
+            var result = mapper.Map<Tag, TagResource>(tag);
+            return Accepted(result);
+        }
+        [Authorize(Policy = Policies.Moderator)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTag(Guid id)
+        {
+            var tag = await repository.GetTag(id);
+
+            if (tag == null)
+                return NotFound();
+
+            repository.Remove(tag);
+            await unitOfWork.CompleteAsync();
+
+            return Accepted();
+        }
     }
 }
