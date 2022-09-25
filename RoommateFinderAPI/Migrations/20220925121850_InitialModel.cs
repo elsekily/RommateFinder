@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
@@ -9,6 +10,9 @@ namespace RoommateFinderAPI.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("Sqlite:InitSpatialMetaData", true);
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -172,8 +176,8 @@ namespace RoommateFinderAPI.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Address = table.Column<string>(type: "TEXT", nullable: true),
-                    Latitude = table.Column<double>(type: "REAL", nullable: false),
-                    longitude = table.Column<double>(type: "REAL", nullable: false),
+                    Location = table.Column<Point>(type: "POINT", nullable: true)
+                        .Annotation("Sqlite:Srid", 4326),
                     NumberofPeopleinTheRoom = table.Column<int>(type: "INTEGER", nullable: false),
                     NumberofPeopleintheApartment = table.Column<int>(type: "INTEGER", nullable: false),
                     NumberofBathRoomsintheApartment = table.Column<int>(type: "INTEGER", nullable: false),

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using RoommateFinderAPI.Persistence;
 
 #nullable disable
@@ -154,8 +155,9 @@ namespace RoommateFinderAPI.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("Latitude")
-                        .HasColumnType("REAL");
+                    b.Property<Point>("Location")
+                        .HasColumnType("POINT")
+                        .HasAnnotation("Sqlite:Srid", 4326);
 
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
@@ -174,9 +176,6 @@ namespace RoommateFinderAPI.Migrations
 
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
-
-                    b.Property<double>("longitude")
-                        .HasColumnType("REAL");
 
                     b.HasKey("Id");
 
@@ -331,11 +330,11 @@ namespace RoommateFinderAPI.Migrations
 
             modelBuilder.Entity("RoommateFinderAPI.Entities.Models.Room", b =>
                 {
-                    b.HasOne("RoommateFinderAPI.Entities.Models.User", "PublishedBy")
+                    b.HasOne("RoommateFinderAPI.Entities.Models.User", "Owner")
                         .WithMany("Rooms")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("PublishedBy");
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("RoommateFinderAPI.Entities.Models.RoomTag", b =>

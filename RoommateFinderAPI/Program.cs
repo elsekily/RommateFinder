@@ -16,7 +16,8 @@ builder.Services.AddAuthorization(config =>
 {
     config.AddPolicy(Policies.Admin, Policies.Policy(Policies.Admin));
     config.AddPolicy(Policies.Moderator, Policies.Policy(Policies.Moderator));
-    //config.AddPolicy(Policies.Member, Policies.Policy(Policies.Member));
+    config.AddPolicy(Policies.Owner, Policies.Policy(Policies.Owner));
+    config.AddPolicy(Policies.Roommate, Policies.Policy(Policies.Roommate));
 });
 //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
 
@@ -39,7 +40,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 builder.Services.AddDbContext<RoommateFinderDbContext>(options =>
-            options.UseSqlite("Filename=../RommateFinder.db"));
+            options.UseSqlite("Filename=../RommateFinder.db", x => x.UseNetTopologySuite()));
 
 builder.Services.AddIdentity<User, IdentityRole>()
    .AddEntityFrameworkStores<RoommateFinderDbContext>();
@@ -49,6 +50,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITagRepository, TagsRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomsRepository>();
 
 builder.Services.AddControllersWithViews();
 

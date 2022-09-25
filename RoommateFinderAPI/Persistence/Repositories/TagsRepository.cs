@@ -24,7 +24,6 @@ namespace RoommateFinderAPI.Persistence.Repositories
 
         public async Task<IEnumerable<Tag>> GetTags()
         {
-            var x = context.Tags;
             return await context.Tags.ToListAsync();
         }
         public void Remove(Tag tag)
