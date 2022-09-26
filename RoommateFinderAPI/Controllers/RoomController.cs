@@ -49,10 +49,9 @@ namespace RoommateFinderAPI.Controllers
                 return BadRequest();
 
             var room = mapper.Map<RoomSaveResource, Room>(roomResource);
-            var email = HttpContext.User.Claims.First(i => i.Type == ClaimTypes.Email).Value;
-            var user = await userManager.FindByEmailAsync(email);
-            room.Owner = user;
-            room.UserId = user.Id;
+
+            room.Owner = await GetUser();
+            room.UserId = room.Owner.Id;
 
             repository.Add(room);
 
@@ -61,6 +60,59 @@ namespace RoommateFinderAPI.Controllers
             room = await repository.GetRoom(room.Id);
             var result = mapper.Map<Room, RoomResource>(room);
             return Created(nameof(CreateRoom), result);
+        }
+        [Authorize(Policy = Policies.Owner)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateRoom(Guid id, [FromBody] RoomSaveResource roomResource)
+        {
+            var room = await repository.GetRoom(id);
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            if (room == null)
+                return NotFound();
+
+            var user = await GetUser();
+
+            if (user.Id != room.Owner.Id)
+                return Unauthorized();
+
+            var maxLongitude = 180;
+            var maxLatitude = 90;
+            roomResource.Latitude = roomResource.Latitude > maxLatitude ? room.Location.Coordinate.X : roomResource.Latitude;
+            roomResource.Longitude = roomResource.Longitude > maxLongitude ? room.Location.Coordinate.Y : roomResource.Longitude;
+            mapper.Map<RoomSaveResource, Room>(roomResource, room);
+
+            await unitOfWork.CompleteAsync();
+
+            room = await repository.GetRoom(room.Id);
+            var result = mapper.Map<Room, RoomResource>(room);
+            return Accepted(result);
+        }
+        [Authorize(Policy = Policies.Owner)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRoom(Guid id)
+        {
+            var room = await repository.GetRoom(id);
+
+            if (room == null)
+                return NotFound();
+
+            var user = await GetUser();
+
+            if (user.Id != room.Owner.Id)
+                return Unauthorized();
+
+            repository.Remove(room);
+            await unitOfWork.CompleteAsync();
+
+            return Accepted();
+        }
+        private async Task<User> GetUser()
+        {
+            var email = HttpContext.User.Claims.First(i => i.Type == ClaimTypes.Email).Value;
+            return await userManager.FindByEmailAsync(email);
         }
     }
 }
